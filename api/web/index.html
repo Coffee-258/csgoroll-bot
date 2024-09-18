@@ -1,0 +1,351 @@
+<html>
+
+<head>
+    <script src="jquery.js"></script>
+    <script src="web.js"></script>
+    <link rel="stylesheet" href="roll.css">
+    <link rel="stylesheet" href="roll-bot.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <link id="favicon" rel="shortcut icon" type="image/png" href="/images/favicon_inactive.png" />
+
+</head>
+
+<body>
+    <div id="nav-bar">
+        <div class="nav-headline-wrapper">
+            <h4 id="eyes-icon"></h4>
+        </div>
+        <div id="nav-tracker-toggle" class="nav-link-wrapper">
+            <span>Tracker</span>
+        </div>
+        <div id="nav-inventory-toggle" class="nav-link-wrapper">
+            <span>Inventory</span>
+        </div>
+        <div id="menu-toggle-wrapper">
+            <div class="menu-icon">
+                <span class="material-icons">
+                menu
+                </span>
+            </div>
+            <div class="close-icon">
+                <span class="material-icons">
+                close
+                </span>
+            </div>
+        </div>
+        <div id="status-indicator-wrapper">
+            <div id="activity-status" title="status">
+                <div id="activity-dot"></div>
+            </div>
+        </div>
+    </div>
+    <dialog id="inventory-dialog">
+        <div id="modal-click-receiver"></div>
+        <div id="inventory-dialog-wrapper" class="loading">
+            <div id="inventory-load-indicator">
+                <span class="loader active"></span>
+            </div>
+            <div id="inventory-wrapper" class="no-scrollbar">
+                <div id="inventory-items"></div>
+            </div>
+            <div id="inventory-actions">
+                <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" id="inventory-load-price">Price selected</button>
+                <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" id="inventory-select-10">Select 10</button>
+                <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" id="refresh-inventory">Refresh</button>
+                <div class="inventory-value-total">
+                    <div class="tracker-price-wrapper">
+                        <img class="coin-icon" src="images/coin.webp" height="16" width="16">
+                        <span id="inventory-total" class="tracker-price">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+    <div id="hamburger-toggled-menu">
+        <div class="table">
+            <div class="table-row">
+                <div class="table-cell">
+                    Status:
+                </div>
+                <div class="table-cell">
+                    <span id="status-span-disconnected" class="status-span visible">disconnected</span>
+                    <span id="status-span-connected" class="status-span green-text">connected</span>
+                </div>
+            </div>
+            <div class="table-row">
+                <div class="table-cell">
+                    Withdraw:
+                </div>
+                <div id="status-withdraw" class="table-cell">
+                    <span id="status-withdraw-active" class="green-text uppercase">active</span>
+                    <span id="status-withdraw-inactive" class="uppercase">inactive</span>
+                </div>
+            </div>
+            <div class="table-row">
+                <div class="table-cell">
+                    Deposit:
+                </div>
+                <div id="status-deposit" class="table-cell">
+                    <span id="status-deposit-active" class="green-text uppercase">active</span>
+                    <span id="status-deposit-inactive" class="uppercase">inactive</span>
+                </div>
+            </div>
+        </div>
+        <button id="change-withdraw-activity" class="toggle-status-button mat-focus-indicator mat-flat-button mat-button-base mat-accent">WITHDRAW</button>
+        <button id="change-deposit-activity" class="toggle-status-button mat-focus-indicator mat-flat-button mat-button-base mat-accent">DEPOSIT</button>
+    </div>
+    <div id="trade-tracker-wrapper">
+        <div id="trade-tracker-ui">
+            <button class="mat-focus-indicator mat-button-3d mat-flat-button mat-button-base mat-accent" id="trade-tracker-toggle">Start</button>
+            <span id="clear-tracker" class="material-icons">
+                delete
+            </span>
+            <div class="trade-tracker-input-wrapper">
+                <span class="label">Max Markup</span>
+                <input type="range" value="0" id="markup-trade-tracker" oninput="changeMarkupTracker(this.value)" min="0" max="12" />
+                <div class="value-display" id="markup-range">0</div>
+            </div>
+            <div class="trade-tracker-input-wrapper">
+                <span class="label full-height">Price Range</span>
+                <input type="number" id="tracker-min" class="value-display value-input" value="100"/>
+                <span class="value-price-range-seperator">-</span>
+                <input type="number" id="tracker-max" class="value-display value-input" value="1000"/>
+                <span id="trade-listening-loader" class="loader"></span>
+            </div>
+        </div>
+        <div id="trade-tracker-list-wrapper" class="no-scrollbar">
+            <div id="trade-tracker-content"></div>
+        </div>
+    </div>
+    <div id="body-wrapper">
+        
+        <div id="main-content-wrapper">
+            <div id="trade-history">
+                <div id="trade-history-list" class="no-scrollbar"></div>
+            </div>
+            <div id="balance-chart-wrapper" class="no-scrollbar">
+                <div class="chart-wrapper">
+                    <canvas id="balance-chart"></canvas>
+                    <div>
+                        <span>Balance: <span id="balance-text" class="green-text"></span></span>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="inventory-chart"></canvas>
+                </div>
+                <div class="content-wrapper" id="stats-wrapper">
+                    <div class="trade-data-table">
+                        <div class="trade-data-row table-header-row">
+                            <div class="trade-data-column green-text">Sold</div>
+                            <div class="trade-data-column green-text">Bought</div>
+                        </div>
+                    </div>
+                    <div class="trade-data-table" id="stats-wrapper">
+                        <div class="trade-data-row">
+                            <div class="trade-data-column">Amount:</div>
+                            <div class="trade-data-column"><span id="items-sold"></span></div>
+                            <div class="trade-data-column">Amount:</div>
+                            <div class="trade-data-column"><span id="items-bought"></span></div>
+                        </div>
+                        <div class="trade-data-row">
+                            <div class="trade-data-column">Total:</div>
+                            <div class="trade-data-column"><span id="items-sold-total"></span></div>
+                            <div class="trade-data-column">Total:</div>
+                            <div class="trade-data-column"><span id="items-bought-total"></span></div>
+                        </div>
+                        <div class="trade-data-row">
+                            <div class="trade-data-column">Markup:</div>
+                            <div class="trade-data-column"><span id="items-sold-markup"></span></div>
+                            <div class="trade-data-column">Markup:</div>
+                            <div class="trade-data-column"><span id="items-bought-markup"></span></div>
+                        </div>
+                        <!--<div class="trade-data-row">
+                            <div class="trade-data-column">Profit:</div>
+                            <div class="trade-data-column"><span id="estimated-profit"></span></div>
+                        </div>-->
+                    </div>
+                    <div class="content-footer">
+                        Last <span id="time-first-trade"></span>
+                    </div>
+                </div>
+                <div class="content-wrapper">
+                    <div class="pie-wrapper">
+                        <div class="pie-title green-text">Amount</div>
+                        <canvas id="deposit-withdraw-chart"></canvas>
+                    </div>
+                    <div class="pie-wrapper">
+                        <div class="pie-title green-text">Price</div>
+                        <canvas id="deposit-withdraw-total-chart"></canvas>
+                    </div>
+                </div>
+                <div class="content-wrapper">
+                    <div class="pie-padding">
+                        <div class="pie-title-bar green-text">Daytime</div>
+                        <div style="height: 156px">
+                            <canvas id="daytime-chart" width="310"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id='script-filter-wrapper' class='loading'>
+            <div id="clickable-background"></div>
+            <div id='script-load-overlay'>
+                <div id='left-side-wrapper'>
+                    <h4>Settings</h4>
+                    <div style='float: left; width: 100%; padding-bottom:10px'>
+                        <div class='float-range-wrapper'>
+                            <div id='float-slider-fn' class='float-slider'>
+                                <span class='float-slider-title'>Factory New</span>
+                                <div class='float-input-wrapper' data-min='0' data-max='0.07'><input type='number'
+                                        class='input-min' value='0'><span>-</span><input class='input-max' type='number'
+                                        value='0.07'></div>
+                            </div>
+                            <div id='float-slider-mw' class='float-slider'>
+                                <span class='float-slider-title'>Minimal Wear</span>
+                                <div class='float-input-wrapper' data-min='0.07' data-max='0.15'><input type='number'
+                                        class='input-min' value='0.07'><span>-</span><input class='input-max'
+                                        type='number' value='0.15'></div>
+                            </div>
+                            <div id='float-slider-ft' class='float-slider'>
+                                <span class='float-slider-title'>Field-Tested</span>
+                                <div class='float-input-wrapper' data-min='0.15' data-max='0.38'><input type='number'
+                                        class='input-min' value='0.15'><span>-</span><input class='input-max'
+                                        type='number' value='0.38'></div>
+                            </div>
+                            <div id='float-slider-ww' class='float-slider'>
+                                <span class='float-slider-title'>Well-Worn</span>
+                                <div class='float-input-wrapper' data-min='0.38' data-max='0.45'><input type='number'
+                                        class='input-min' value='0.38'><span>-</span><input class='input-max'
+                                        type='number' value='0.45'></div>
+                            </div>
+                            <div id='float-slider-bs' class='float-slider'>
+                                <span class='float-slider-title'>Battle-Scared</span>
+                                <div class='float-input-wrapper' data-min='0.45' data-max='1'><input type='number'
+                                        class='input-min' value='0.45'><span>-</span><input class='input-max'
+                                        type='number' value='1'></div>
+                            </div>
+                        </div>
+                        <div id='float-range-indicator' class="float-range-indicator">
+                            <div class='float-segment' data-wear='fn' id='float-segment-fn'
+                                style='width:7%; background-color: #2fa1b0;' data-min='0' data-max='0.07'>
+                                <div class='cover-start'></div>
+                                <div class='cover-end'></div>
+                            </div>
+                            <div class='float-segment' data-wear='mw' id='float-segment-mw'
+                                style='width:8%; background-color: #78b320;' data-min='0.07' data-max='0.15'>
+                                <div class='cover-start'></div>
+                                <div class='cover-end'></div>
+                            </div>
+                            <div class='float-segment' data-wear='ft' id='float-segment-ft'
+                                style='width:23%; background-color: #e4be3a;' data-min='0.15' data-max='0.38'>
+                                <div class='cover-start'></div>
+                                <div class='cover-end'></div>
+                            </div>
+                            <div class='float-segment' data-wear='ww' id='float-segment-ww'
+                                style='width:7%; background-color: #fd8037;' data-min='0.38' data-max='0.45'>
+                                <div class='cover-start'></div>
+                                <div class='cover-end'></div>
+                            </div>
+                            <div class='float-segment' data-wear='bs' id='float-segment-bs'
+                                style='width:55%; background-color: #fc4038;' data-min='0.45' data-max='1'>
+                                <div class='cover-start'></div>
+                                <div class='cover-end'></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="table-content-wrapper">
+                        <div style='display: table-row; height: 25px;'>
+                            <div class='filter-table-cell header-cell' id='table-general'>
+                                <span>GENERAL</span>
+                                <div class='filter-category-settings'><span>Use custom float</span>
+                                    <input class='use-custom-float' type='checkbox'>
+                                </div>
+                            </div>
+                            <div class='filter-table-cell header-cell' id='table-sticker'>
+                                <span>STICKER CRAFTS</span>
+                                <div id="add-sticker-filter"
+                                    class='filter-btn add-filter mat-focus-indicator mat-button-3d mat-flat-button mat-button-base mat-accent'>
+                                    <span class="material-icons">
+                                        add
+                                    </span>
+                                </div>
+                                <div class='filter-category-settings'><span>Use custom float</span>
+                                    <input class='use-custom-float' type='checkbox'>
+                                </div>
+
+                            </div>
+                            <div class='filter-table-cell header-cell' id='table-specific'>
+                                <span>SPECIFIC ITEMS</span>
+                                <div id="add-specific-filter"
+                                    class='filter-btn add-filter mat-focus-indicator mat-button-3d mat-flat-button mat-button-base mat-accent'>
+                                    <span class="material-icons">
+                                        add
+                                    </span>
+                                </div>
+                                <div class='filter-category-settings'><span>Use custom float</span>
+                                    <input class='use-custom-float' type='checkbox'>
+                                </div>
+                            </div>
+                        </div>
+                        <div style='display: table-row; height: 100%;'>
+                            <div class='filter-table-cell filter-wrapper-cell' id='general-filter-wrapper'>
+                            </div>
+                            <div class='filter-table-cell filter-wrapper-cell' id='sticker-filter-wrapper'>
+                            </div>
+                            <div class='filter-table-cell filter-wrapper-cell' id='specific-filter-wrapper'>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id='right-side-wrapper'>
+                    <h4>Blacklist</h4>
+                    <textarea id='blacklist-textarea'></textarea>
+                </div>
+                <div
+                    class='filter-btn material-btn save-filters mat-focus-indicator mat-button-3d mat-flat-button mat-button-base mat-accent'>
+                    <span class="material-icons">
+                        save
+                    </span>
+                </div>
+                <div id="close-filters"
+                    class='filter-btn material-btn mat-focus-indicator mat-button-3d mat-flat-button mat-button-base mat-accent'>
+                    <span class="material-icons">
+                        close
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div id="live-trades-wrapper">
+            <div id="live-trades-control">
+                <div data-class="hide-deposit" class="live-trades-toggle active">Sold</div>
+                <div data-class="hide-withdraw" class="live-trades-toggle active">Bought</div>
+                <div data-class="hide-cancelled" class="live-trades-toggle active">Cancelled</div>
+            </div>
+            <div id="live-trades" class="no-scrollbar">
+                <div id="live-trade-dummy-item" class="live-trade-item">
+                    <div class="live-trade-dummy-text">Waiting for trades</div>
+                </div>
+            </div>
+        </div>
+        <!--<div id="console-stream" class="no-scrollbar">-->
+
+    </div>
+    </div>
+    <div id="material-btn-menu">
+        <div id="open-settings"
+            class='filter-btn material-btn mat-focus-indicator mat-button-3d mat-flat-button mat-button-base mat-accent'>
+            <span class="material-icons">
+                settings
+            </span>
+        </div>
+    </div>
+</body>
+
+</html>

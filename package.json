@@ -1,0 +1,53 @@
+{
+  "name": "roll-bot-headless",
+  "version": "1.0.0",
+  "description": "CSGORoll Trade Bot Headless",
+  "main": "api/launcher.js",
+  "scripts": {
+    "bot": "node api/launcher.js",
+    "build": "pkg api/launcher.js -c package.json"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "pkg": {
+    "scripts": [
+      "node_modules/lzma/src/lzma_worker.js"
+    ],
+    "assets": [
+      "node_modules/@doctormckay/steam-crypto/system.pem",
+      "api/web/*",
+      "api/web/images/*"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
+  },
+  "author": "coffee",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "0.27",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "discord-webhook-node": "^1.1.8",
+    "discord.js": "^14.15.2",
+    "express": "^4.18.2",
+    "graphql-ws": "^5.14.0",
+    "https-proxy-agent": "^7.0.4",
+    "jwt-decode": "^4.0.0",
+    "microtime": "^3.1.1",
+    "microtime-nodejs": "^1.0.0",
+    "ntp-time": "^2.0.4",
+    "pkg": "^5.8.1",
+    "steam-session": "^1.7.1",
+    "steam-totp": "^2.1.2",
+    "steam-tradeoffer-manager": "^2.11.0",
+    "steam-user": "5.0.4",
+    "steamcommunity": "^3.46.1",
+    "websocket": "^1.0.34",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0"
+  }
+}

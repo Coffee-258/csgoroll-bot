@@ -1,0 +1,14 @@
+node_modules/
+*secrets.json
+*config.json
+*polldata.json
+*balance.json
+*trades*json
+*recaptcha.json
+*todo.txt
+cfg/*.json
+data/*.json
+api/data/value.json
+*listings.json
+cfg/license
+roll-bot-headless.exe
